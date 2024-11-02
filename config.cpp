@@ -22,7 +22,7 @@ class CfgMods
 		hideName = 1;
 		hidePicture = 1;
 		name = "ZenNewYears";
-		credits = "";
+		credits = "Artyfox";
 		author = "Zenarchist";
 		authorID = "0";
 		version = "1.0";
