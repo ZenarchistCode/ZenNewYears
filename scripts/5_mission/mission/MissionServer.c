@@ -10,7 +10,7 @@ modded class MissionServer
 		GetZenNewYearsConfig();
 	}
 
-	// Detect if current date/time = config date and time down to the minute
+	// Check if the current date/time matches any date and time in TriggerDates
 	bool IsEventTime()
 	{
 		int utcYear = 0;
@@ -25,22 +25,20 @@ modded class MissionServer
 
 		utcHour += GetZenNewYearsConfig().UTC_Offset;
 
-		if (utcMinute != GetZenNewYearsConfig().TriggerMinute)
-			return false;
-
-		if (utcHour != GetZenNewYearsConfig().TriggerHour)
-			return false;
-
-		if (utcDay != GetZenNewYearsConfig().TriggerDay)
-			return false;
-
-		if (utcMonth != GetZenNewYearsConfig().TriggerMonth)
-			return false;
-
-		if (utcYear != GetZenNewYearsConfig().TriggerYear)
-			return false;
-
-		return true;
+		// Loop through each date in the TriggerDates array to see if any match the current time
+		foreach (DateConfig dateConfig : GetZenNewYearsConfig().TriggerDates)
+		{
+			if (utcMinute == dateConfig.TriggerMinute &&
+			    utcHour == dateConfig.TriggerHour &&
+			    utcDay == dateConfig.TriggerDay &&
+			    utcMonth == dateConfig.TriggerMonth &&
+			    utcYear == dateConfig.TriggerYear)
+			{
+				return true; // Event time matches one of the specified dates
+			}
+		}
+		
+		return false; // No matching event time found
 	}
 
 	override void OnUpdate(float timeslice)
@@ -55,7 +53,7 @@ modded class MissionServer
 		PlayerBase player;
 		array<Man> players();
 		GetGame().GetPlayers(players);
-		autoptr array<vector> m_FireworksPositions = new array<vector>; // autoptr = delete automatically this array when this scope ends
+		autoptr array<vector> m_FireworksPositions = new array<vector>; // autoptr deletes automatically when scope ends
 
 		// Launch fireworks on players
 		foreach (Man man : players)
@@ -72,7 +70,7 @@ modded class MissionServer
 			if (GetZenNewYearsConfig().PlayerFireworksCount <= 0)
 				continue;
 
-			// To prevent a shit ton of fireworks spawning on groups of players, only launch 1 cluster per nearby player
+			// Avoid multiple fireworks in close proximity
 			playerPos = player.GetPosition();
 			bool skipFireworks = false;
 			foreach (vector fireworkPos : m_FireworksPositions)
