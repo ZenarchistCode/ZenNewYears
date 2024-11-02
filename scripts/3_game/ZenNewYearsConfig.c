@@ -1,14 +1,27 @@
+class DateConfig
+{
+	int TriggerDay;
+	int TriggerMonth;
+	int TriggerYear;
+	int TriggerHour;
+	int TriggerMinute;
+
+	void DateConfig(int day, int month, int year, int hour, int minute)
+	{
+		TriggerDay = day;
+		TriggerMonth = month;
+		TriggerYear = year;
+		TriggerHour = hour;
+		TriggerMinute = minute;
+	}
+}
+
 class ZenNewYearsConfig
 {
 	private const static string zenModFolder = "$profile:\\Zenarchist\\";
 	private const static string zenConfigName = "ZenNewYearsConfig.json";
 
 	string Message;
-	int TriggerDay;
-	int TriggerMonth;
-	int TriggerYear;
-	int TriggerHour;
-	int TriggerMinute;
 	int UTC_Offset; // +10 for Brisbane, Australia etc
 	int PlayerFireworksCount;
 	int MinFireworksDistance;
@@ -21,6 +34,13 @@ class ZenNewYearsConfig
 	ref array<vector> StaticFireworkSpawns; // Traders & safezones etc
 	string SpawnObject;
 
+	ref array<ref DateConfig> TriggerDates; // Array to hold multiple dates
+
+	void ZenNewYearsConfig()
+	{
+		TriggerDates = new ref array<ref DateConfig>;
+	}
+
 	void Load()
 	{
 		if (!GetGame().IsDedicatedServer())
@@ -32,20 +52,12 @@ class ZenNewYearsConfig
 			return;
 		}
 
-		// Get current date
-		int utcYear = 0;
-		int utcMonth = 0;
-		int utcDay = 0;
-		GetYearMonthDayUTC(utcYear, utcMonth, utcDay);
+		// Initialize default TriggerDates if not loaded from config
+		InitializeDefaultDates();
 
-		// Set default config
-		TriggerDay = 1;
-		TriggerMonth = 1;
-		TriggerYear = utcYear + 1;
-		TriggerHour = 0;
-		TriggerMinute = 0;
+		// Set default config for other fields
 		UTC_Offset = 10;
-		Message = "Happy New Year! Good luck in " + TriggerYear + " survivor...";
+		Message = "Happy New Year! Celebrate with the fireworks!";
 		PlayerFireworksCount = 3;
 		MinFireworksDistance = 50;
 		MaxFireworksDistance = 150;
@@ -57,12 +69,22 @@ class ZenNewYearsConfig
 		StaticFireworkSpawns = new ref array<vector>;
 		StaticFireworkSpawns.Insert("5631.078125 184.755157 10607.497070");
 
-		if (TriggerYear == 2024)
-			SpawnObject = "Anniversary_FireworksLauncher";
-		else
-			SpawnObject = "FireworksLauncher";
+		SpawnObject = "FireworksLauncher";
 
 		Save();
+	}
+
+	void InitializeDefaultDates()
+	{
+		// Get current date
+		int utcYear = 0;
+		int utcMonth = 0;
+		int utcDay = 0;
+		GetYearMonthDayUTC(utcYear, utcMonth, utcDay);
+
+		// Set default TriggerDates with a New Year's date and another date as an example
+		TriggerDates.Insert(new DateConfig(1, 1, utcYear + 1, 0, 0));  // New Year
+		TriggerDates.Insert(new DateConfig(25, 12, utcYear + 1, 0, 0)); // Christmas
 	}
 
 	void Save()
